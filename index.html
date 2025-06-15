@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CiviSense - Your AI Legal Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            margin-bottom: 40px;
+            padding: 60px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: white;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fb;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            color: #7f8c8d;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .tab-content {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+            background: #fafbfc;
+        }
+
+        .upload-area:hover {
+            border-color: #3498db;
+            background: #f4f6f8;
+        }
+
+        .upload-area.dragover {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #95a5a6;
+            margin-bottom: 15px;
+        }
+
+        .recording-controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .record-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .record-btn.record {
+            background: #dc3545;
+        }
+
+        .record-btn.stop {
+            background: #6c757d;
+        }
+
+        .record-btn.recording {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .audio-visualizer {
+            height: 60px;
+            background: #f8f9fb;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            gap: 2px;
+            padding: 10px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .bar {
+            width: 4px;
+            background: #3498db;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: white;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .result-card {
+            background: #f8f9fb;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            border: 1px solid #e1e8ed;
+        }
+
+        .result-card h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .result-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #34495e;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e1e8ed;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CiviSense</h1>
+            <p>Your AI Legal Translator - Converting complex legal language into simple, understandable terms for everyone</p>
+        </div>
+
+        <div class="main-card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('audio')">🎤 Audio Recording</button>
+                <button class="tab" onclick="switchTab('upload')">📄 Document Upload</button>
+                <button class="tab" onclick="switchTab('text')">✏️ Text Input</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Audio Recording Tab -->
+                <div id="audio-tab" class="tab-pane active">
+                    <h3>Record Courtroom Audio</h3>
+                    <p>Start recording to capture live courtroom proceedings or upload an audio file.</p>
+                    
+                    <div class="recording-controls">
+                        <button id="recordBtn" class="record-btn record" onclick="toggleRecording()">
+                            🎤
+                        </button>
+                        <button id="stopBtn" class="record-btn stop" onclick="stopRecording()" disabled>
+                            ⏹️
+                        </button>
+                    </div>
+                    
+                    <div class="audio-visualizer" id="visualizer"></div>
+                    
+                    <div class="upload-area" onclick="document.getElementById('audioFile').click()">
+                        <div class="upload-icon">🎵</div>
+                        <h4>Or upload an audio file</h4>
+                        <p>Supports MP3, WAV, M4A formats</p>
+                        <input type="file" id="audioFile" accept="audio/*" style="display: none;" onchange="handleAudioFile(this)">
+                    </div>
+                    
+                    <button class="btn" onclick="processAudio()" id="processAudioBtn" disabled>
+                        🔄 Translate Audio
+                    </button>
+                </div>
+
+                <!-- Document Upload Tab -->
+                <div id="upload-tab" class="tab-pane">
+                    <h3>Upload Legal Documents</h3>
+                    <p>Upload court transcripts, legal documents, or any text file containing legal jargon.</p>
+                    
+                    <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📄</div>
+                        <h4>Click to upload or drag & drop</h4>
+                        <p>Supports PDF, DOC, DOCX, TXT formats</p>
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(this)">
+                    </div>
+                    
+                    <div id="filePreview"></div>
+                    
+                    <button class="btn" onclick="processDocument()" id="processDocBtn" disabled>
+                        🔄 Translate Document
+                    </button>
+                </div>
+
+                <!-- Text Input Tab -->
+                <div id="text-tab" class="tab-pane">
+                    <h3>Enter Legal Text</h3>
+                    <p>Paste or type legal text that you want translated into plain English.</p>
+                    
+                    <textarea id="legalText" placeholder="Enter legal text here... For example: 'The aforementioned party hereby agrees to the terms and conditions set forth in this agreement...'"></textarea>
+                    
+                    <button class="btn" onclick="processText()" id="processTextBtn" style="margin-top: 20px;">
+                        🔄 Translate Text
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h2>Translation Results</h2>
+            <div id="resultsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let currentAudioBlob = null;
+        let currentDocumentText = '';
+
+        // API Key Configuration - Replace with your actual OpenAI API key
+        const OPENAI_API_KEY = 'OPEN_AI_API_KEY';
+
+        function getApiKey() {
+            return OPENAI_API_KEY;
+        }
+
+        function showNotification(message, type) {
+            // Create a simple notification system
+            const notification = document.createElement('div');
+            notification.className = `status-indicator status-${type}`;
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '1000';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        // Tab Management
+        function switchTab(tabName) {
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to selected tab and pane
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        // Audio Recording Functions
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    currentAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    document.getElementById('processAudioBtn').disabled = false;
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('stopBtn').disabled = false;
+                
+                startVisualizer();
+                showNotification('Recording started...', 'success');
+            } catch (error) {
+                showNotification('Error accessing microphone: ' + error.message, 'error');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('stopBtn').disabled = true;
+                
+                stopVisualizer();
+                showNotification('Recording stopped. Ready to process!', 'success');
+            }
+        }
+
+        function startVisualizer() {
+            const visualizer = document.getElementById('visualizer');
+            visualizer.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = '10px';
+                visualizer.appendChild(bar);
+            }
+            
+            // Simple animation for demo purposes
+            const bars = visualizer.querySelectorAll('.bar');
+            const animateViz = () => {
+                if (isRecording) {
+                    bars.forEach(bar => {
+                        const height = Math.random() * 40 + 10;
+                        bar.style.height = height + 'px';
+                    });
+                    setTimeout(animateViz, 100);
+                }
+            };
+            animateViz();
+        }
+
+        function stopVisualizer() {
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach(bar => {
+                bar.style.height = '10px';
+            });
+        }
+
+        function handleAudioFile(input) {
+            const file = input.files[0];
+            if (file) {
+                currentAudioBlob = file;
+                document.getElementById('processAudioBtn').disabled = false;
+                showNotification(`Audio file "${file.name}" loaded successfully!`, 'success');
+            }
+        }
+
+        // Document Upload Functions
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                processFileContent(file);
+            }
+        }
+
+        function processFileContent(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentDocumentText = e.target.result;
+                document.getElementById('filePreview').innerHTML = `
+                    <div class="result-card">
+                        <h4>📄 ${file.name}</h4>
+                        <p class="result-text">${currentDocumentText.substring(0, 300)}${currentDocumentText.length > 300 ? '...' : ''}</p>
+                    </div>
+                `;
+                document.getElementById('processDocBtn').disabled = false;
+                showNotification(`Document "${file.name}" loaded successfully!`, 'success');
+            };
+            
+            if (file.type === 'application/pdf') {
+                showNotification('PDF processing would require additional libraries. Please use TXT files for now.', 'warning');
+                return;
+            }
+            
+            reader.readAsText(file);
+        }
+
+        // Drag and Drop
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFileContent(files[0]);
+            }
+        });
+
+        // Processing Functions
+        async function processAudio() {
+            if (!currentAudioBlob) {
+                showStatus('No audio to process', 'error');
+                return;
+            }
+
+            if (!getApiKey()) {
+                showStatus('Please configure your API key first', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                // First, transcribe the audio using OpenAI Whisper
+                const transcription = await transcribeAudio(currentAudioBlob);
+                
+                // Then translate the legal text
+                const translation = await translateLegalText(transcription);
+                
+                showResults([
+                    { title: 'Original Transcription', content: transcription },
+                    { title: 'Plain English Translation', content: translation }
+                ]);
+            } catch (error) {
+                showStatus('Error processing audio: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function processDocument() {
+            if (!currentDocumentText) {
+                showStatus('No document to process', 'error');
+                return;
+            }
+
+            if (!getApiKey()) {
+                showStatus('Please configure your API key first', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const translation = await translateLegalText(currentDocumentText);
+                
+                showResults([
+                    { title: 'Original Document Text', content: currentDocumentText },
+                    { title: 'Plain English Translation', content: translation }
+                ]);
+            } catch (error) {
+                showStatus('Error processing document: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function processText() {
+            const text = document.getElementById('legalText').value.trim();
+            
+            if (!text) {
+                showStatus('Please enter some legal text to translate', 'error');
+                return;
+            }
+
+            if (!getApiKey()) {
+                showStatus('Please configure your API key first', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const translation = await translateLegalText(text);
+                
+                showResults([
+                    { title: 'Original Legal Text', content: text },
+                    { title: 'Plain English Translation', content: translation }
+                ]);
+            } catch (error) {
+                showStatus('Error processing text: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // API Functions
+        async function transcribeAudio(audioBlob) {
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'audio.wav');
+            formData.append('model', 'whisper-1');
+
+            const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getApiKey()}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Transcription failed: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            return result.text;
+        }
+
+        async function translateLegalText(text) {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getApiKey()}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are a legal translator that converts complex legal language into simple, easy-to-understand English. Your goal is to make legal concepts accessible to the general public, especially those without legal representation. Explain legal terms in plain language, break down complex sentences, and provide context where helpful. Maintain accuracy while making the content approachable.'
+                        },
+                        {
+                            role: 'user',
+                            content: `Please translate this legal text into plain English: "${text}"`
+                        }
+                    ],
+                    max_tokens: 1500,
+                    temperature: 0.3
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Translation failed: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            return result.choices[0].message.content;
+        }
+
+        // UI Helper Functions
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showResults(results) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <h4>${result.title}</h4>
+                    <div class="result-text">${result.content}</div>
+                `;
+                container.appendChild(card);
+            });
+            
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if API key is already saved
+            if (getApiKey()) {
+                showStatus('API key loaded from storage', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
